@@ -15,6 +15,7 @@ Note - Configure the values for `shared_credentials_file` and `profile` in the `
 
 ### Step 2 - Configure Apache and HAProxy
 1. Run - `ansible-playbook -i ./inventory/ec2_instances.ini apache-haproxy-playbook.yaml  --extra-vars 'sticky_session=<flag>'`
+
 To enable **sticky_session** , set the flag to **true**
 **E.g** `ansible-playbook -i ./inventory/ec2_instances.ini apache-haproxy-playbook.yaml  --extra-vars 'sticky_session=true'`
 
