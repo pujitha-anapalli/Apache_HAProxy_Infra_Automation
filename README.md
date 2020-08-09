@@ -96,3 +96,18 @@ This command will run the tests for the HAProxy Server. The details for this is 
 ## Step 4 - Delete Infra
 -  Run - `terraform destroy`
 Once the project is verified, we can delete the entire resources created. 
+
+
+# BONUS
+## Brief summary of what you liked about your solution
+- Ansible Inventory file created automatically by the Terraform with all the required details. 
+- IPs of the Servers launched are dynamically added at all the relevant places throughout the solution ( Ansible Inventory and Testinfra testcases ). 
+
+## Brief summary of what you disliked about your solution
+- During the first invoke of the ansible playbook command, need to add each host to the trusted hosts list manually. This could have been automated. 
+
+## Configurable Round Robin / Sticky Load Balancer
+- This is handled while invloking ansible-playbook command. 
+
+## Return instance identifier of your webserver in addition to “Hello World”
+- Everytime we curl the Load Balancer, the Instance IP is also displayed along with "Hello World".
