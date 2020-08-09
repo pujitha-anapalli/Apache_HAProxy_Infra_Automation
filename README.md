@@ -27,8 +27,13 @@ To disable **sticky_session** , set the flag to **true** . Then **round robin** 
 
 **Verify Results**
 **sticky_session set to false**
-Note down the Load Balancer IP from the ansible command output.
+
+Note down the **Load Balancer IP** from the ansible command output.
+
 Copy the `load_balancer_ip`in any browser or run `curl <load_balancer_ip>` continously. We will get the below results alternatively : 
+
 `Hello World from Server 1 - <apache_server_1_ip>`
+
 or
+
 `Hello World from Server 2 - <apache_server_2_ip>`
