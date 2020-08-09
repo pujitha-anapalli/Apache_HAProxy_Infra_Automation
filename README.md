@@ -36,7 +36,7 @@ To enable **sticky_session** , set the flag to **true**
 
 To disable **sticky_session** , set the flag to **false**. Then **round robin** routing policy will be enabled by default. 
 
-**E.g** `ansible-playbook -i ./inventory/ec2_instances.ini apache-haproxy-playbook.yaml  --extra-vars 'sticky_session=true'`
+**E.g** `ansible-playbook -i ./inventory/ec2_instances.ini apache-haproxy-playbook.yaml  --extra-vars 'sticky_session=false'`
 
 ## Verify Results
 
