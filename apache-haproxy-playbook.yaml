@@ -1,0 +1,115 @@
+---
+# this is ansible playbook to setup HAProxy and 2 Webservers
+
+# Set up the apache on ec2 servers
+
+- name: Lets start setting up the apache on ec2 servers
+  hosts: ec2_instances
+  gather_facts: false
+  become: true
+  become_method: sudo
+
+# variables that store the server ip details
+  vars:
+    webserver1_ip : "{{ groups['ec2_instances'][0] }}"
+    webserver2_ip : "{{ groups['ec2_instances'][1] }}"
+    ip  : "{{ inventory_hostname }}"
+    html : "Hello World"
+
+  tasks:
+
+  - name: Install Apache on the Server
+    yum:
+      name: httpd
+      state: present
+
+  - name: Get the Instance IP
+    command: curl http://169.254.169.254/latest/meta-data/public-ipv4
+    register: instance_public_ip
+
+  - name: Show the Instance IP
+    debug:
+      var: instance_public_ip.stdout
+
+  - name: Start the apache server
+    service:
+      name: httpd
+      state: started
+
+  - name: Construct html for Server 1
+    set_fact:
+      html : "Hello World from Server 1 - {{ inventory_hostname }}"
+    when: ip == webserver1_ip
+
+  - name: Construct html for Server 2
+    set_fact:
+      html : "Hello World from Server 2 - {{ inventory_hostname }}"
+    when: ip == webserver2_ip
+
+  - debug: msg="{{ html }}"
+
+  - name: Generate Index.html with server details
+    copy:
+      dest: /var/www/html/index.html
+      content: "{{ html }}"
+      mode: 0644
+    notify:
+        - restart httpd
+
+  handlers:
+    - name: restart httpd
+      service: name=httpd state=restarted
+
+# Set up the HAProxy on the 3rd ec2 server
+- name: Lets start setting up the HAProxy on the 3rd ec2 server
+  hosts: load_balancer
+  gather_facts: false
+  become: true
+  become_method: sudo
+
+  vars:
+    webserver1_ip : "{{ groups['ec2_instances'][0] }}"
+    webserver2_ip : "{{ groups['ec2_instances'][1] }}"
+
+  tasks:
+  - name: Install HAProxy
+    yum:
+      name: haproxy
+      state: present
+
+  - name: Start the HAProxy
+    service:
+      name: haproxy
+      state: started
+
+  - name: Get the Instance IP
+    command: curl http://169.254.169.254/latest/meta-data/public-ipv4
+    register: instance_public_ip
+
+  - name: Show the Instance IP
+    debug:
+      var: instance_public_ip.stdout
+  - debug: msg="Load Balancer IP is {{ instance_public_ip.stdout }}"
+
+  # RoundRobin Config
+  - name: Add the 2 webservers in the HAProxy Config file for Backend with RR
+    template:
+      src: templates/haproxy-rr.cfg.j2
+      dest: /etc/haproxy/haproxy.cfg
+      mode: 0644
+    when: sticky_session == "false"
+    notify:
+      - restart HAProxy
+
+  # Sticky-Session Config
+  - name: Add the 2 webservers in the HAProxy Config file for Backend with Sticky-Session
+    template:
+      src: templates/haproxy-sticky-session.cfg.j2
+      dest: /etc/haproxy/haproxy.cfg
+      mode: 0644
+    when: sticky_session == "true"
+    notify:
+      - restart HAProxy
+  handlers:
+    - name: restart HAProxy
+      service: name=haproxy state=restarted
