@@ -3,7 +3,7 @@ This GitRepo contains the complete setup details of creating infrastructure and 
 
 ## Softwares Used  
 Following softwares are used in this setup : 
-1. Terraform - For creating Infrastructure
+1. Terraform - For creating Infrastructure in AWS
 2. Ansible - For configuring Apache and HAProxy in the servers created above
 3. Testinfra - For running the testcases
 
@@ -13,8 +13,15 @@ Following softwares are used in this setup :
 - 2. Run - `terraform apply` ( Confirm the changes and approve the plan. )
 
 Note - Configure the values for `shared_credentials_file` and `profile` in the `provider` section before running the above 2 commands. One can also configure AWS creds in various other ways too. 
+Below resources will be created:
+- 2 EC2 Instances that will be configured as Webservers
+- 1 EC2 Instance that will be configured as Load Balancer
+- 1 Security Group for Webservers
+- 1 Security Group for Load Balancer
+- 1 Local file (inventory/ec2_instances.ini)  which will be used for Ansible Inventory
+- 1 Local file (web_server_ips.txt) with the details of Webservers IPs to be used in the testcases
 
-3 ec2-instances will be launched by the Terraform like below :
+Three AWS ec2-instances will be launched by the Terraform like below :
 
 ![snapshot 1](https://github.com/pujitha-anapalli/Apache_HAProxy_Infra_Automation/blob/master/Screenshots/AWS-Ec2-Instances.png)  
 
@@ -56,3 +63,36 @@ Any one Server between the two, will be hit by the Load Balancer repeatedly :
 
 `Hello World from Server 1 - <apache_server_1_ip>`
 ![snapshot 1](https://github.com/pujitha-anapalli/Apache_HAProxy_Infra_Automation/blob/master/Screenshots/Server-1.png)  
+
+## Step 3 - Test the configurations
+
+- **Testing the Web Servers**
+
+`py.test -v --hosts=ec2_instances --ansible-inventory=inventory/ec2_instances.ini --connection=ansible tests/test_web_server.py --force-ansible`
+
+This command will run the tests for the Apache Servers. The details for the servers are fetched from the Ansible Inventory  Below are the testcases :
+1. Check for sudo access
+2. Check if Apache is installed
+3. Check if Apache is up and running
+4. Check if curl is enabled
+
+![snapshot 1](https://github.com/pujitha-anapalli/Apache_HAProxy_Infra_Automation/blob/master/Screenshots/Web_Server_Test.png)  
+
+- **Testing the Load Balancer**
+
+`py.test -v --hosts=load_balancer --ansible-inventory=inventory/ec2_instances.ini --connection=ansible tests/test_load_balancer.py --force-ansible`
+
+This command will run the tests for the HAProxy Server. The details for this is also fetched from the Ansible Inventory  Below are the testcases :
+
+1. Check for sudo access
+2. Check if HAProxy is installed
+3. Check if HAProxy is up and running
+4. Check if curl is enabled
+5. Check if we can curl Load balancer when Apache on Server 1 is stopped.
+6. Check if we can curl Load balancer when Apache on Server 2 is stopped.
+
+![snapshot 1](https://github.com/pujitha-anapalli/Apache_HAProxy_Infra_Automation/blob/master/Screenshots/Load_Balancer_Test.png)  
+
+## Step 4 - Delete Infra
+-  Run - `terraform destroy`
+Once the project is verified, we can delete the entire resources created. 
