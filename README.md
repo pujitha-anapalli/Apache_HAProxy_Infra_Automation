@@ -24,9 +24,11 @@ Note - Configure the values for `shared_credentials_file` and `profile` in the `
 
 
 To enable **sticky_session** , set the flag to **true**
+
 **E.g** `ansible-playbook -i ./inventory/ec2_instances.ini apache-haproxy-playbook.yaml  --extra-vars 'sticky_session=true'`
 
 To disable **sticky_session** , set the flag to **false**. Then **round robin** routing policy will be enabled by default. 
+
 **E.g** `ansible-playbook -i ./inventory/ec2_instances.ini apache-haproxy-playbook.yaml  --extra-vars 'sticky_session=true'`
 
 ## Verify Results
